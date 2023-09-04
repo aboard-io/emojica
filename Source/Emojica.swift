@@ -40,7 +40,7 @@ public final class Emojica {
     private var _pointSize: CGFloat = 17.0
     private var _minimumCodePointWidth: UInt = 0
     private var _separator: String = "-"
-    private var _imageSet: ImageSet = .default
+    private var _imageSet: ImageSet = .twemoji
     
     /// The font to be used for standard text.
     /// - note:     If no font is set, the system font is used.
@@ -281,8 +281,12 @@ extension Emojica {
                 .joined(separator: self.separator)
         }
         
-        guard let image = UIImage(named: name) else { return nil }
+        let twemojiStringUrl =  "https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@14.0.0/img/twitter/64/\(name).png"
         
+        guard let image = ImageDownloader.downloadImage(twemojiStringUrl) else {
+            return nil
+        }
+            
         let attachment = EmojicaAttachment()
         attachment.image = image
         attachment.resize(to: self.pointSize, with: self.font)
