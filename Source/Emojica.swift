@@ -38,9 +38,8 @@ public final class Emojica {
     // Private declarations.
     private var _font: UIFont?
     private var _pointSize: CGFloat = 17.0
-    private var _minimumCodePointWidth: UInt = 0
+    private var _minimumCodePointWidth: UInt = 2
     private var _separator: String = "-"
-    private var _imageSet: ImageSet = .twemoji
     
     /// The font to be used for standard text.
     /// - note:     If no font is set, the system font is used.
@@ -62,65 +61,8 @@ public final class Emojica {
         }
     }
     
-    /// The minimum width used in the names of the imported images. The character `0` is used for padding.
-    /// - note:     This value must between 0 and 8.
-    public var minimumCodePointWidth: UInt {
-        get { return _minimumCodePointWidth }
-        set {
-            _minimumCodePointWidth = newValue < 8 ? newValue : 8
-        }
-    }
-    
-    /// The separator used in the names of the imported images.
-    public var separator: String {
-        get { return _separator }
-        set {
-            _separator = newValue
-        }
-    }
-    
-    /// The image set used in the project.
-    public var imageSet: ImageSet {
-        get { return _imageSet }
-        set {
-            switch newValue {
-            case .default:
-                self.minimumCodePointWidth = 0
-                self.separator = "-"
-            case .twemoji:
-                self.minimumCodePointWidth = 2
-                self.separator = "-"
-            case .emojione:
-                self.minimumCodePointWidth = 4
-                self.separator = "-"
-            case .noto:
-                self.minimumCodePointWidth = 4
-                self.separator = "_"
-            }
-            self._imageSet = newValue
-        }
-    }
-    
-    /// Setting this to `false` _used to_ strip out all modifier symbols (🏻, 🏼, 🏽, 🏾 and 🏿).
-    /// - note:     This will be removed in a future version.
-    @available(swift, deprecated: 1.0)
-    public var useModifiers: Bool = true
-    
     /// Keep the instance non-revertible if the original strings aren't needed after conversion.
     public var revertible: Bool = false
-}
-
-extension Emojica {
-    public enum ImageSet: String {
-        /// Default parameters.
-        case `default` = "Custom"
-        /// Twemoji 2.2 compatibility.
-        case twemoji = "Twemoji"
-        /// Emoji One compatibility.
-        case emojione = "Emoji One"
-        /// Noto Emoji compatibility.
-        case noto = "Noto Emoji"
-    }
 }
 
 extension Emojica {
@@ -267,7 +209,7 @@ extension Emojica {
     
     /// Format string used for converting a code point to a hexadecimal string.
     private var formatString: String {
-        return "%0\(self.minimumCodePointWidth)x"
+        return "%0\(self._minimumCodePointWidth)x"
     }
     
     /// Generates a replacement string for a grapheme cluster.
@@ -278,7 +220,7 @@ extension Emojica {
             return replacement.unicodeScalars
                 .filter { !($0.isZeroWidthJoiner || $0.isVariationSelector16) }
                 .map { String(format: self.formatString, $0.value) }
-                .joined(separator: self.separator)
+                .joined(separator: self._separator)
         }
         
         let twemojiStringUrl =  "https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@14.0.0/img/twitter/64/\(name).png"

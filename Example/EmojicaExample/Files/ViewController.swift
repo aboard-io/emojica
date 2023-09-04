@@ -30,7 +30,6 @@ class ViewController: UIViewController, UITextViewDelegate {
     
     // MARK: - Modifiable values
     lazy var font = UIFont.systemFont(ofSize: 28, weight: UIFont.Weight.thin)
-    lazy var images: Emojica.ImageSet = .default
     
     // MARK: - Usage of convert
     func convert() {
@@ -52,18 +51,8 @@ class ViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var bottom: NSLayoutConstraint!
     
-    @IBOutlet weak var imageSet: UIBarButtonItem!
-    @IBAction func imageSetPressed(_ sender: UIBarButtonItem) { sheet() }
-    
     @IBOutlet weak var state: UISwitch!
     @IBAction func stateChanged(_ sender: UISwitch) {
-        if state.isOn {
-            if AppDelegate.noImages {
-                alert()
-                state.setOn(false, animated: true)
-                return
-            }
-        }
         state.isOn ? convert() : revert()
     }
     
@@ -82,17 +71,11 @@ extension ViewController {
         navigationItem.titleView = UIImageView(image: UIImage(named: "logo"))
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-        self.set(imageSet: images)
         textView.delegate = self
         textView.text = "V14 emoji 🫠🫢🫣🫡🫥🫤🥹🫱🏿🫱🫲🫲🏽🫳🫴🫰🫰🏽🫵🏾🫵🏾🫶🫦🫅🫄🫃🧌🪸🪷🪹🪺🫘🫙🫗🛝🛞🛟🪬🪩🪫🩼🩻🫧🪪🟰"
         textView.font = font
         emojica.font = font
         emojica.revertible = true
-    }
-    
-    func set(imageSet: Emojica.ImageSet) {
-        emojica.imageSet = imageSet
-        self.imageSet.title = emojica.imageSet.rawValue
     }
     
     @objc func keyboardWillHide(_ notification: NSNotification) {
@@ -114,37 +97,5 @@ extension ViewController {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         textView.resignFirstResponder()
-    }
-}
-
-extension ViewController {
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if AppDelegate.noImages {
-            alert()
-        }
-    }
-    
-    func alert() {
-        let alert = UIAlertController(title: "No Images", message: "You need to import an image set for this to work.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.cancel, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
-    
-    func sheet() {
-        let sheet = UIAlertController.init(title: nil, message: "Select Image Set", preferredStyle: .actionSheet)
-        let imageSets = [Emojica.ImageSet.default, Emojica.ImageSet.twemoji, Emojica.ImageSet.emojione, Emojica.ImageSet.noto]
-        for imageSet in imageSets {
-            let action = UIAlertAction(title: imageSet.rawValue, style: .default) { _ in
-                self.set(imageSet: imageSet)
-                if self.state.isOn {
-                    let reverted = self.emojica.revert(attributedString: self.textView.emojicaText)
-                    self.textView.emojicaText = self.emojica.convert(string: reverted)
-                }
-            }
-            sheet.addAction(action)
-        }
-        sheet.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.cancel, handler: nil))
-        present(sheet, animated: true, completion: nil)
     }
 }
