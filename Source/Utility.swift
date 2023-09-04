@@ -92,3 +92,34 @@ internal class EmojicaAttachment: NSTextAttachment {
         self.unicodeScalars.append(contentsOf: unicodeScalars)
     }
 }
+
+internal class ImageDownloader {
+    
+    static func downloadImage(_ urlString: String) -> UIImage? {
+        guard let url = URL(string: urlString) else {
+            return nil
+        }
+        let session = URLSession.shared
+        var image: UIImage?
+        let sem = DispatchSemaphore(value: 0)
+        
+        let task = session.dataTask(with: url) { data, response, error in
+            defer { sem.signal() }
+            
+            if let error = error {
+                return
+            }
+            
+            if let data = data, let emojiImage = UIImage(data: data) {
+                image = emojiImage
+                return
+            }
+        }
+        
+        task.resume()
+        
+        sem.wait()
+        
+        return image
+   }
+}
